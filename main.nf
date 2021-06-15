@@ -1,8 +1,7 @@
 #!/usr/bin/env nexflow
 
-// nexflow variable and pipeline parameter
-blastdb="myBlastDatabase"
-params.query="file.fasta"
 
-println "I will blast $params.query against $blastdb"
+println "\nI will blast $params.query against $params.dbName using $params.threads CPUs and output it to $params.out_dir\n"
+
+
 

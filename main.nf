@@ -53,6 +53,7 @@ process runBlast {
     script:
     """
     $params.app  -num_threads $params.threads -db $params.dbDir/$params.dbName -query $queryFile -outfmt $params.outfmt -out $params.outFilename
+    mkdir -p test_dir
     """
 }
 

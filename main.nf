@@ -36,16 +36,26 @@ if (params.help) {
     exit 0
 }
 
+Channel
+    .fromPath(params.query)
+    .splitFasta(by:params.chunkSize, file:true)
+    .set { queryFile_ch }
 
 process runBlast {
     
+    input:
+    path(queryFile) from queryFile_ch
+    
     output:
     publishDir "${params.out_dir}/blastout"
-    path(params.outFilename)
+    path(params.outFilename) into blast_output_ch
 
     script:
     """
-    $params.app  -num_threads $params.threads -db $params.dbDir/$params.dbName -query $params.query -outfmt $params.outfmt -out $params.outFilename
+    $params.app  -num_threads $params.threads -db $params.dbDir/$params.dbName -query $queryFile -outfmt $params.outfmt -out $params.outFilename
     """
 }
+
+  blast_output_ch
+    .collectFile(name: 'blast_output_combined.txt', storeDir: params.out_dir)
 

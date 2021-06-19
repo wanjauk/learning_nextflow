@@ -41,6 +41,39 @@ Channel
     .splitFasta(by:params.chunkSize, file:true)
     .set { queryFile_ch }
 
+if (params.genome) {
+
+    genomefile_ch = Channel
+                        .fromPath(params.genome)
+                        .map { file -> tuple(file.simpleName, file.parent, file) }
+
+    process runMakeBlastDB  {
+
+        input:
+        set val(dbName), path(dbDir), file(FILE) from genomefile_ch
+
+        output:
+        val dbName into dbName_ch
+        path dbDir into dbDir_ch 
+ 
+        script:
+            """
+            
+           makeblastdb -in $params.genome -dbtype 'nucl'  -out $dbDir/$dbName
+
+            """
+    }
+
+} else {
+  Channel.fromPath(params.dbDir)
+         .set { dbDir_ch }
+
+  Channel.from(params.dbName)
+         .set { dbName_ch }
+}
+
+
+
 process runBlast {
     
     input:
@@ -53,7 +86,7 @@ process runBlast {
     script:
     """
     $params.app  -num_threads $params.threads -db $params.dbDir/$params.dbName -query $queryFile -outfmt $params.outfmt -out $params.outFilename
-    mkdir -p test_dir
+   
     """
 }
 
